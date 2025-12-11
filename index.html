@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>إلى أغلى إنسانة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Amiri:ital,wght@1,700&display=swap" rel="stylesheet">
@@ -12,8 +12,25 @@
         body {
             font-family: 'Cairo', sans-serif;
             background: linear-gradient(135deg, #ffe4e6 0%, #fda4af 100%);
-            overflow-x: hidden;
+            overflow: hidden; /* منع السحب الزائد في ايفون */
+            /* دعم كامل لطول شاشة ايفون */
+            min-height: 100vh;
+            min-height: 100dvh;
+            /* حماية من النوتش والحواف في ايفون 11 وما فوق */
+            padding-top: max(1rem, env(safe-area-inset-top));
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
             touch-action: manipulation;
+        }
+
+        #flower-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1; /* تأكيد ظهور القلوب فوق الخلفية */
+            overflow: hidden;
         }
 
         .heart-beat {
@@ -29,23 +46,23 @@
         }
 
         .floating-element {
-            position: fixed;
-            top: -20px;
+            position: absolute;
+            top: -50px;
             animation-name: fall;
             animation-timing-function: linear;
-            z-index: 0;
-            pointer-events: none;
+            z-index: 1;
         }
 
         @keyframes fall {
-            to { transform: translateY(110vh) rotate(360deg); }
+            to { transform: translateY(120vh) rotate(360deg); }
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.90);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.85); /* شفافية أكثر لرؤية الخلفية */
+            backdrop-filter: blur(12px);
             border: 2px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            z-index: 10; /* البطاقة فوق القلوب */
         }
 
         .pop-in {
@@ -57,27 +74,40 @@
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
         
-        /* Custom scrollbar hide */
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        /* تحسين مظهر الزر للايفون */
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4 relative text-gray-800">
+<body class="flex flex-col items-center justify-center p-4 relative text-gray-800 w-full">
 
-    <!-- Background Decoration -->
+    <!-- Background Decoration Container -->
     <div id="flower-container"></div>
 
+    <!-- Audio Element -->
+    <audio id="bg-music" loop playsinline>
+        <source src="song.mp3" type="audio/mpeg">
+    </audio>
+
     <!-- Main Content -->
-    <div class="glass-card w-full max-w-md rounded-3xl p-8 text-center relative z-10 transform transition-all hover:scale-[1.01]">
+    <div class="glass-card w-full max-w-md rounded-3xl p-8 text-center relative transform transition-all hover:scale-[1.01] mx-auto">
         
+        <!-- Music Toggle Button -->
+        <button onclick="toggleMusic()" id="music-btn" class="absolute top-4 left-4 bg-pink-100/90 text-pink-600 px-4 py-2 rounded-full flex items-center justify-center shadow-sm hover:bg-pink-200 transition-colors z-20 gap-2 font-bold text-sm backdrop-blur-sm">
+            <i class="fas fa-music"></i>
+            <span>شغليني</span>
+        </button>
+
         <!-- Header -->
-        <div class="mb-6">
+        <div class="mb-6 mt-2">
             <div class="text-6xl text-red-500 mb-4 drop-shadow-md heart-beat inline-block">❤️</div>
             <h1 class="text-3xl font-bold text-pink-600 mb-2">إلى حبيبتي</h1>
             <p class="text-gray-600 text-sm">أنتِ أجمل صدفة في حياتي</p>
         </div>
 
         <!-- Dynamic Message Box -->
-        <div id="message-area" class="min-h-[120px] flex items-center justify-center bg-pink-50 rounded-2xl p-6 mb-6 border border-pink-100 shadow-inner">
+        <div id="message-area" class="min-h-[120px] flex items-center justify-center bg-pink-50/80 rounded-2xl p-6 mb-6 border border-pink-100 shadow-inner backdrop-blur-sm">
             <p class="text-xl font-bold text-gray-700 font-[Amiri] leading-relaxed transition-all duration-300" id="current-message">
                 اضغطي على الأزرار بالأسفل...
             </p>
@@ -85,12 +115,12 @@
 
         <!-- Buttons Grid -->
         <div class="grid grid-cols-1 gap-3 mb-4">
-            <button onclick="showLove()" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform active:scale-95 transition-all text-lg flex items-center justify-center gap-2">
+            <button onclick="showLove()" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform active:scale-95 transition-all text-lg flex items-center justify-center gap-2">
                 <i class="fas fa-heart"></i>
                 كلام حب
             </button>
             
-            <button onclick="rainMix()" class="w-full bg-white text-pink-600 border-2 border-pink-100 hover:bg-pink-50 font-bold py-3 px-4 rounded-xl shadow-sm transform active:scale-95 transition-all flex items-center justify-center gap-2 text-lg">
+            <button onclick="rainMix()" class="w-full bg-white text-pink-600 border-2 border-pink-100 hover:bg-pink-50 font-bold py-4 px-4 rounded-xl shadow-sm transform active:scale-95 transition-all flex items-center justify-center gap-2 text-lg">
                 <span class="text-xl">🤎❤️</span>
                 أمطري حباً
             </button>
@@ -106,11 +136,40 @@
     </div>
 
     <script>
+        // Music Control
+        const audio = document.getElementById('bg-music');
+        const musicBtn = document.getElementById('music-btn');
+        let isPlaying = false;
+
+        function toggleMusic() {
+            if (isPlaying) {
+                audio.pause();
+                musicBtn.innerHTML = '<i class="fas fa-music"></i> <span>شغليني</span>';
+            } else {
+                audio.play().then(() => {
+                    musicBtn.innerHTML = '<i class="fas fa-pause"></i> <span>وقفيني</span>';
+                }).catch(e => {
+                    alert("يرجى إضافة ملف الصوت song.mp3");
+                    console.error(e);
+                });
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // Auto-fix for iOS Audio Context (sometimes needed)
+        document.addEventListener('touchstart', function() {
+            if(!isPlaying && audio.paused) {
+                // Just to unlock audio context
+                audio.load(); 
+            }
+        }, { once: true });
+
+
         // Love Messages
         const messages = [
             "أنتِ أجمل شيء حدث لي في دنيتي 🌹",
             "لا يوجد كلمات تصف جمال عينيكِ ✨",
-            "أحبك أكثر من الأمس، ❤️",
+            "أحبك أكثر من الأمس، وأقل من الغد ❤️",
             "وجودك بجانبي هو كل ما أحتاجه لأكون سعيداً",
             "أنتِ قمري الذي ينير عتمة أيامي 🌙",
             "ضحكتك هي الموسيقى المفضلة لقلبي 🎶",
@@ -148,26 +207,23 @@
         }
 
         function rainMix() {
-            // Mix of Red Hearts, Brown Hearts, and Flowers
             const items = ['❤️', '🤎', '🌹', '🌸', '🌺', '🤎', '❤️'];
-            
             let i = 0;
             const interval = setInterval(() => {
                 const randomItem = items[Math.floor(Math.random() * items.length)];
                 createFloatingElement(randomItem);
                 i++;
-                if (i > 40) clearInterval(interval);
-            }, 80);
+                if (i > 50) clearInterval(interval); // Increased count
+            }, 60); // Faster rain
 
             messageEl.textContent = "الدنيا تمطر حب وورد لعيونك 🤎❤️";
         }
 
         function createExplosion(emoji) {
-            // Find center of screen roughly for explosion if button not specific
             const x = window.innerWidth / 2;
             const y = window.innerHeight / 2;
 
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < 15; i++) {
                 const el = document.createElement('div');
                 el.innerText = emoji;
                 el.style.position = 'fixed';
@@ -199,11 +255,14 @@
             el.classList.add('floating-element');
             el.innerText = char;
             
-            const size = Math.random() * 24 + 16; // Slightly larger elements
+            const size = Math.random() * 30 + 15; // Bigger hearts
             el.style.fontSize = `${size}px`;
-            el.style.left = Math.random() * 95 + 'vw'; // Avoid extreme edges
+            el.style.left = Math.random() * 90 + 5 + 'vw'; // Keep away from edges
             
-            const duration = Math.random() * 3 + 4; 
+            // Random opacity for better background effect
+            el.style.opacity = Math.random() * 0.7 + 0.3;
+
+            const duration = Math.random() * 5 + 5; 
             el.style.animationDuration = `${duration}s`;
             
             document.getElementById('flower-container').appendChild(el);
@@ -213,12 +272,12 @@
             }, duration * 1000);
         }
 
-        // Ambient background: Mix of Red, Brown, Flowers
+        // Ambient background: More frequent and varied
         setInterval(() => {
             const ambientItems = ['❤️', '🤎', '🌹', '🌸', '✨'];
             const randomChar = ambientItems[Math.floor(Math.random() * ambientItems.length)];
             createFloatingElement(randomChar);
-        }, 600); // Slightly faster background rain
+        }, 400); // Increased frequency
 
     </script>
 </body>
